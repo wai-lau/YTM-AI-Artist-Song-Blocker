@@ -51,7 +51,7 @@ function clock() {
 
 // nextAdvances: clicking Next changes the song. dislikeAdvances: YouTube Music
 // moves on by itself after a dislike. duration: NaN = media not loaded yet.
-function player({ nextAdvances = true, hasNext = true, duration = 200, dislikeAdvances = false } = {}) {
+function player({ nextAdvances = true, hasNext = true, duration = 200, dislikeAdvances = false, keyAdvances = false } = {}) {
   const title = el('div', 'Dust on the Wind');
   const byline = el('div', 'The Velvet Sundown • Floating on Echoes • 2025');
   const advance = () => { title.textContent = 'Song Two'; byline.textContent = 'Real Artist • Album'; };
@@ -73,14 +73,17 @@ function player({ nextAdvances = true, hasNext = true, duration = 200, dislikeAd
     video: vid,
   };
   if (hasNext) m['ytmusic-miniplayer button[aria-label="Next"]'] = next;
-  return { m, next, disBtn, vid, title };
+  // YouTube Music's own shortcut: "j" plays the next song, in any page language.
+  const keys = [];
+  const body = { dispatchEvent: ev => { keys.push(ev); if (ev.type === 'keydown' && ev.key === 'j' && keyAdvances) advance(); return true; } };
+  return { m, next, disBtn, vid, title, keys, body };
 }
 
 async function load(opts = {}, local = {}) {
   const P = player(opts);
   const C = clock();
   const document = {
-    readyState: 'loading', addEventListener() {}, body: {},
+    readyState: 'loading', addEventListener() {}, body: P.body,
     querySelector: sel => {
       for (const part of sel.split(',').map(s => s.trim())) if (P.m[part]) return P.m[part];
       return null;
@@ -173,6 +176,23 @@ cases.push(['dislike on, neither the dislike nor Next moves on: one Next click, 
   C.tick(10000);
   return (P.next.clicks === 1 && P.vid.seeks.length === 1 && P.vid.seeks[0] === 200)
     || `Next clicks = ${P.next.clicks}, seeks = [${P.vid.seeks}]`;
+}]);
+
+const jDowns = P => P.keys.filter(e => e.type === 'keydown' && e.key === 'j').length;
+
+cases.push(['skip only, no Next button (non-English page): presses "j" on the page once; it moves on, so no seek', async () => {
+  const { P, C } = await load({ hasNext: false, keyAdvances: true, duration: 200 }, blocked);
+  const pressedAtOnce = jDowns(P);
+  C.tick(10000);
+  const k = P.keys.find(e => e.type === 'keydown');
+  return (pressedAtOnce === 1 && jDowns(P) === 1 && k.code === 'KeyJ' && k.bubbles === true && P.vid.seeks.length === 0)
+    || `j keydowns at once = ${pressedAtOnce}, total = ${jDowns(P)}, code = ${k && k.code}, bubbles = ${k && k.bubbles}, seeks = [${P.vid.seeks}]`;
+}]);
+
+cases.push(['skip only, Next button found: clicks it and does not also press "j" (no double skip)', async () => {
+  const { P, C } = await load({ nextAdvances: true, keyAdvances: true }, blocked);
+  C.tick(10000);
+  return (P.next.clicks === 1 && jDowns(P) === 0) || `Next clicks = ${P.next.clicks}, j keydowns = ${jDowns(P)}`;
 }]);
 
 let fail = 0;
