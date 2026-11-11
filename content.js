@@ -96,37 +96,66 @@ function primaryArtist(byline) {
 }
 
 function skipTrack() {
+    const songBefore = getSongInfo();
     const nextBtn = document.querySelector(SEL.next);
     if (nextBtn) simulateClick(nextBtn);
 
-    setTimeout(() => {
-        const video = document.querySelector("video");
-        if (video && !video.ended) video.currentTime = video.duration || 99999;
-    }, 500);
+    let attempts = 0;
+    let shouldSeek = false;
+    const poll = setInterval(() => {
+        attempts++;
+        const songAfter = getSongInfo();
+        const changed = songAfter && songBefore &&
+            (songAfter.title !== songBefore.title || songAfter.artist !== songBefore.artist);
+        
+        if (changed) {
+            clearInterval(poll);
+        } else if (attempts >= 15) {
+            shouldSeek = true;
+        }
+        
+        if (shouldSeek) {
+            const video = document.querySelector("video");
+            if (video && video.duration > 0 && isFinite(video.duration)) {
+                clearInterval(poll);
+                video.currentTime = video.duration;
+            } else if (attempts >= 100) {
+                clearInterval(poll);
+            }
+        }
+    }, 100);
 }
 
 function performDownvoteAndSkip() {
     const dislikeWrapper = document.querySelector(SEL.dislike);
+    const songBefore = getSongInfo();
 
     if (!dislikeWrapper) { skipTrack(); return; }
 
     const actualBtn = dislikeWrapper.querySelector("button") || dislikeWrapper;
-    const isPressed = dislikeWrapper.getAttribute("aria-pressed") === "true" || 
+    const isPressed = dislikeWrapper.getAttribute("aria-pressed") === "true" ||
                       actualBtn.getAttribute("aria-pressed") === "true";
 
-    if (!isPressed) simulateClick(actualBtn);
-    else { skipTrack(); return; }
+    if (!isPressed) {
+        simulateClick(actualBtn);
+    } else {
+        skipTrack();
+        return;
+    }
 
     let attempts = 0;
     const poll = setInterval(() => {
         attempts++;
-        const success = dislikeWrapper.getAttribute("aria-pressed") === "true" || 
-                        actualBtn.getAttribute("aria-pressed") === "true";
+        const songAfter = getSongInfo();
+        const changed = songAfter && songBefore &&
+            (songAfter.title !== songBefore.title || songAfter.artist !== songBefore.artist);
         
-        if (success || attempts >= 20) { 
+        if (changed) {
             clearInterval(poll);
-            if (success) setTimeout(() => { skipTrack(); }, 2000); 
-            else skipTrack();
+        } else if (attempts >= 20) {
+            clearInterval(poll);
+            const nextBtn = document.querySelector(SEL.next);
+            if (nextBtn) simulateClick(nextBtn);
         }
     }, 100);
 }
