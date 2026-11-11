@@ -98,7 +98,12 @@ function primaryArtist(byline) {
 function skipTrack() {
     const songBefore = getSongInfo();
     const nextBtn = document.querySelector(SEL.next);
-    if (nextBtn) simulateClick(nextBtn);
+    if (nextBtn) {
+        simulateClick(nextBtn);
+    } else {
+        const evt = new KeyboardEvent('keydown', { key: 'j', code: 'KeyJ', bubbles: true });
+        document.body.dispatchEvent(evt);
+    }
 
     let attempts = 0;
     let shouldSeek = false;
