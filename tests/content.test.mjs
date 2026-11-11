@@ -32,7 +32,7 @@ async function blocked(local, artist, title) {
   const ctx = makeCtx(local);
   await vm.runInContext('updateBlockList()', ctx);
   ctx.__song = { artist, title };
-  vm.runInContext('getSongInfo = () => __song; performDownvoteAndSkip = () => { __hit = true; }; __hit = false; checkAndSkip();', ctx);
+  vm.runInContext('getSongInfo = () => __song; blockCurrentSong = () => { __hit = true; }; __hit = false; checkAndSkip();', ctx);
   return ctx.__hit;
 }
 
@@ -59,6 +59,7 @@ const cases = [
   ['blocked song: same title, other artist not blocked', { blockedTracks: [{ title: 'Love', artist: 'A' }] }, 'B', 'Love', false],
   ['blocked song: old plain-string entry matches exact title', { blockedTracks: ['Love'] }, 'B', 'Love', true],
   ['blocked song: old plain-string entry is not a keyword', { blockedTracks: ['Love'] }, 'B', 'I Love You', false],
+  ['blocked song: popup "Manual Entry" matches any artist', { blockedTracks: [{ title: 'Love', artist: 'Manual Entry' }] }, 'B', 'Love', true],
 ];
 
 let fail = 0;

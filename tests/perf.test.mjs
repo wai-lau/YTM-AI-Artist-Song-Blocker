@@ -22,7 +22,7 @@ const ctx = {
 vm.createContext(ctx);
 vm.runInContext(code, ctx);
 await vm.runInContext('updateBlockList()', ctx);
-vm.runInContext('performDownvoteAndSkip = () => {}; __i = 0;', ctx);
+vm.runInContext('blockCurrentSong = () => {}; __i = 0;', ctx);
 
 function msPerCall(songExpr, n) {
   vm.runInContext(`getSongInfo = () => (${songExpr});`, ctx);

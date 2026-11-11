@@ -58,7 +58,7 @@ function layout(kind) {
   return { m, next: m['ytmusic-player-bar .next-button'], dislikeBtn: disBtn, anchorParent: mid };
 }
 
-function load(kind) {
+function load(kind, local = {}) {
   const L = layout(kind);
   let injected = null;
   const document = {
@@ -77,7 +77,7 @@ function load(kind) {
     MutationObserver: class { observe() {} disconnect() {} },
     MouseEvent: class { constructor(type) { this.type = type; } },
     fetch: async () => ({ ok: false }),
-    chrome: { storage: { local: { get: async () => ({}), set: async () => {} }, onChanged: { addListener() {} } } },
+    chrome: { storage: { local: { get: async () => local, set: async () => {} }, onChanged: { addListener() {} } } },
   };
   vm.createContext(ctx);
   vm.runInContext(code, ctx);
@@ -114,10 +114,25 @@ for (const kind of ['old', 'new']) {
   }]);
 }
 
+// Blocking a song: skip only by default; dislike only when the popup option is on.
+const blockedArtist = { blockedArtists: ['1950 SoulClub'] };
+cases.push(['new layout: blocked song, dislike option off (default): skips without disliking', async () => {
+  const { ctx, L } = load('new', blockedArtist);
+  await run(ctx, 'updateBlockList()');
+  run(ctx, 'checkAndSkip()');
+  return (L.next.clicks === 1 && L.dislikeBtn.clicks === 0) || `Next clicks = ${L.next.clicks}, Dislike clicks = ${L.dislikeBtn.clicks}`;
+}]);
+cases.push(['new layout: blocked song, dislike option on: dislikes', async () => {
+  const { ctx, L } = load('new', { ...blockedArtist, dislikeBlocked: true });
+  await run(ctx, 'updateBlockList()');
+  run(ctx, 'checkAndSkip()');
+  return L.dislikeBtn.clicks === 1 || `Dislike clicks = ${L.dislikeBtn.clicks}`;
+}]);
+
 let fail = 0;
 for (const [label, fn] of cases) {
   let r;
-  try { r = fn(); } catch (e) { r = `threw ${e.message}`; }
+  try { r = await fn(); } catch (e) { r = `threw ${e.message}`; }
   if (r !== true) fail++;
   console.log(`${r === true ? 'PASS' : 'FAIL'}  ${label}${r === true ? '' : `  (${r})`}`);
 }
