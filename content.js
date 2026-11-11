@@ -110,6 +110,7 @@ function skipTrack() {
         
         if (changed) {
             clearInterval(poll);
+            return;
         } else if (attempts >= 15) {
             shouldSeek = true;
         }
@@ -154,8 +155,7 @@ function performDownvoteAndSkip() {
             clearInterval(poll);
         } else if (attempts >= 20) {
             clearInterval(poll);
-            const nextBtn = document.querySelector(SEL.next);
-            if (nextBtn) simulateClick(nextBtn);
+            skipTrack();
         }
     }, 100);
 }

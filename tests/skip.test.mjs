@@ -159,6 +159,22 @@ cases.push(['dislike on, the song stays after the dislike: Next clicked once, no
     || `Dislike clicks = ${P.disBtn.clicks}, Next clicks = ${P.next.clicks}, seeks = [${P.vid.seeks}]`;
 }]);
 
+cases.push(['skip only, song moves on late (after the seek is due) with the next song loaded: no seek', async () => {
+  const { P, C } = await load({ nextAdvances: false, duration: NaN }, blocked);
+  C.tick(2500); // past the 1.5 s point, video still not loaded
+  P.title.textContent = 'Song Two'; // YouTube Music moves on late
+  P.vid.duration = 200; // and the next song's video has loaded
+  C.tick(10000);
+  return P.vid.seeks.length === 0 || `seeks = [${P.vid.seeks}] (the next song was skipped)`;
+}]);
+
+cases.push(['dislike on, neither the dislike nor Next moves on: one Next click, then one seek to the end', async () => {
+  const { P, C } = await load({ dislikeAdvances: false, nextAdvances: false, duration: 200 }, { ...blocked, dislikeBlocked: true });
+  C.tick(10000);
+  return (P.next.clicks === 1 && P.vid.seeks.length === 1 && P.vid.seeks[0] === 200)
+    || `Next clicks = ${P.next.clicks}, seeks = [${P.vid.seeks}]`;
+}]);
+
 let fail = 0;
 for (const [label, fn] of cases) {
   let r;
