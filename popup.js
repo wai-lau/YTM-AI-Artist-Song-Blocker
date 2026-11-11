@@ -157,6 +157,15 @@ function removeItem(key, val) {
     });
 }
 
+// --- OPTIONS ---
+
+const optDislike = document.getElementById('opt-dislike');
+chrome.storage.local.get(['dislikeBlocked'], (res) => { optDislike.checked = res.dislikeBlocked === true; });
+optDislike.onchange = () => {
+    chrome.storage.local.set({ dislikeBlocked: optDislike.checked });
+    showStatus(optDislike.checked ? 'Blocked songs will be disliked.' : 'Blocked songs will be skipped only.');
+};
+
 // --- EVENTS ---
 
 tabs.forEach(tab => {

@@ -19,6 +19,7 @@ let blockList = [];
 let trackList = [];
 let blockRegexes = [];
 let lastCheckedKey = "";
+let dislikeBlocked = false;
 let lastProcessedSong = ""; 
 
 console.log("[YTM Ward] Engine Started. Created by Spirit Flame (spiritflame@tutamail.com)");
@@ -47,10 +48,11 @@ function simulateClick(element) {
 }
 
 async function updateBlockList() {
-    const localData = await chrome.storage.local.get(['blockedArtists', 'blockedKeywords', 'blockedTracks']);
+    const localData = await chrome.storage.local.get(['blockedArtists', 'blockedKeywords', 'blockedTracks', 'dislikeBlocked']);
     const localArtists = localData.blockedArtists || [];
     const localKeywords = localData.blockedKeywords || []; 
     const localTracks = localData.blockedTracks || []; 
+    dislikeBlocked = localData.dislikeBlocked === true;
     
     let remoteArtists = [];
     try {
@@ -72,7 +74,7 @@ async function updateBlockList() {
         .map(t => typeof t === 'string'
             ? { title: t.trim().toLowerCase(), artist: null }
             : { title: String((t && t.title) || '').trim().toLowerCase(),
-                artist: (t && typeof t.artist === 'string') ? primaryArtist(t.artist) : null })
+                artist: (t && typeof t.artist === 'string' && t.artist !== 'Manual Entry') ? primaryArtist(t.artist) : null })
         .filter(t => t.title.length > 0);
     
     blockList = [...new Set(rawList)]
@@ -129,6 +131,12 @@ function performDownvoteAndSkip() {
     }, 100);
 }
 
+// Skip only, unless the popup option "Also dislike blocked songs" is on.
+function blockCurrentSong() {
+    if (dislikeBlocked) performDownvoteAndSkip();
+    else skipTrack();
+}
+
 function getSongInfo() {
     const titleEl = document.querySelector(SEL.title);
     const bylineEl = document.querySelector(SEL.byline);
@@ -150,7 +158,7 @@ function checkAndSkip() {
     if (trackHit) {
         lastProcessedSong = song.title;
         console.log(`[YTM Ward] 🛑 BLOCKED: song "${song.title}"`);
-        performDownvoteAndSkip();
+        blockCurrentSong();
         return;
     }
 
@@ -165,7 +173,7 @@ function checkAndSkip() {
     if (match) {
         lastProcessedSong = song.title;
         console.log(`[YTM Ward] 🛑 BLOCKED: Found whole word "${match}"`);
-        performDownvoteAndSkip();
+        blockCurrentSong();
     }
 }
 
@@ -233,7 +241,7 @@ async function addToBlockList(term, listName) {
         update[targetList] = list;
         await chrome.storage.local.set(update);
         await updateBlockList();
-        performDownvoteAndSkip();
+        blockCurrentSong();
     }
 }
 
