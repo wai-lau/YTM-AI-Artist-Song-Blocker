@@ -4,6 +4,7 @@ Newest first.
 
 | When | Question | Wai's answer | Reading taken |
 |---|---|---|---|
+| 2026-11-11 | Who runs the Human Music build: a new mates lead in `~/src/human-music` with Qwen, or this session without Qwen? | "A" | You start `mates` in `~/src/human-music`; its lead follows the plan from Task 1 (Task 0, the live recon, was done here) and routes the coded tasks to Qwen. `CLAUDE.md` there carries your decisions. |
 | 2026-11-11 | What should our own from-scratch version be called? | "HumanMusic", then "human-music", then: name is "Human Music", repo name is human-music | Display name "Human Music", with a space (manifest, popup, README); repo and folder `human-music`. Replaces the working name `ytm-ai-filter`. |
 | 2026-11-11 | (Wai asked whether pull request #7 had really been submitted upstream.) | "Keep it on my fork only dont request merge" | Closed upstream pull request #7 unmerged (it had no comments or reviews); the branch stays on your fork. No pull requests, issues or comments upstream from now on unless you ask. This replaces the earlier fork-and-pull-request answer. |
 | 2026-11-11 | Undo the dislikes from the first live test? | "And undo the dislokes" | Checked every 1950 SoulClub release (9 songs): only "California Love" was disliked; cleared and confirmed after a reload. The other blocks in that 2-second chain left no dislike. |
