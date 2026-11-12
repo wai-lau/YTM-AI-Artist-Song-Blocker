@@ -4,7 +4,7 @@ Newest first.
 
 | When | Question | Wai's answer | Reading taken |
 |---|---|---|---|
-| 2026-11-11 | What should our own from-scratch version be called? | "HumanMusic" | The new extension, its repo and its manifest are named HumanMusic, replacing the working name `ytm-ai-filter`. |
+| 2026-11-11 | What should our own from-scratch version be called? | "HumanMusic", then "human-music" | Display name HumanMusic (manifest, popup); repo and folder `human-music`. Replaces the working name `ytm-ai-filter`. |
 | 2026-11-11 | (Wai asked whether pull request #7 had really been submitted upstream.) | "Keep it on my fork only dont request merge" | Closed upstream pull request #7 unmerged (it had no comments or reviews); the branch stays on your fork. No pull requests, issues or comments upstream from now on unless you ask. This replaces the earlier fork-and-pull-request answer. |
 | 2026-11-11 | Undo the dislikes from the first live test? | "And undo the dislokes" | Checked every 1950 SoulClub release (9 songs): only "California Love" was disliked; cleared and confirmed after a reload. The other blocks in that 2-second chain left no dislike. |
 | 2026-11-11 | How should we make our own version, given the original has no license? | "A" | New repo written from scratch: a short spec from our tests and notes first, then fresh code built around the AI checker, new icons, MIT license, Soul Over AI credited (CC BY 4.0). No lines copied from the original. Pull request #7 stays upstream. The name is still open. |
